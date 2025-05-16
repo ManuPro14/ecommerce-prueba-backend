@@ -5,7 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { ValidationPipe } from '../common/pipes/validation.pipe';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@ApiTags('Autenticación')
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -21,7 +21,7 @@ export class AuthController {
       return {
         statusCode: 201,
         message: 'Registro exitoso',
-        access_token: result.access_token
+        access_token: result.access_token,
       };
     } catch (error) {
       throw new BadRequestException(error.message);

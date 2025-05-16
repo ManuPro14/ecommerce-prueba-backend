@@ -5,12 +5,24 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guards';
 import { JwtService } from '@nestjs/jwt';
+import {SwaggerModule, DocumentBuilder} from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const reflector = app.get(Reflector);
   const jwtService = app.get(JwtService);
   app.useGlobalGuards(new JwtAuthGuard(reflector, jwtService), new RolesGuard(reflector));
+
+  //Swagger configuration 
+  const config = new DocumentBuilder()
+  .setTitle('Marketplace API')
+  .setDescription('Documentación de la API del marketplace')
+  .setVersion('1.0')
+  .addBearerAuth()
+  .build();
+
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
   app.useGlobalPipes(new ValidationPipe())
