@@ -47,6 +47,9 @@ export class AuthService {
   }
 
   private generateToken(user: User): { access_token: string } {
+    if(!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined');
+    }
     const payload = {
       sub: user._id,
       email: user.email,

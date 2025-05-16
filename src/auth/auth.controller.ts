@@ -4,6 +4,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ValidationPipe } from '../common/pipes/validation.pipe';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -11,6 +12,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Public()
   @UsePipes(new ValidationPipe())
   @ApiOperation({ summary: 'Registro de nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
@@ -29,6 +31,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @UsePipes(new ValidationPipe())
   @ApiOperation({ summary: 'Inicio de sesión de usuario' })
   @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso' })
