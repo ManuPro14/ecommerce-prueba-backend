@@ -38,6 +38,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   async login(@Body() loginDto: LoginDto) {
     try {
+      console.log('typeof password:', typeof loginDto.password);
       const user = await this.authService.validateUser(loginDto.email, loginDto.password);
       if (!user) {
         throw new BadRequestException('Credenciales inválidas');

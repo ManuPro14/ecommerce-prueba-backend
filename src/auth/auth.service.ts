@@ -1,33 +1,46 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User } from './schemas/user.schema';
+
+import { User } from '../auth/schemas/user.schema';
 import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<{ access_token: string }> {
-    const existingUser = await this.userModel.findOne({ email: registerDto.email });
-    if (existingUser) {
-      throw new UnauthorizedException('El correo electrónico ya está registrado');
+  async register(registerDto: RegisterDto) {
+    const { email, password, passwordConfirmation } = registerDto;
+
+    // Validar que no exista el usuario
+    const userExists = await this.userModel.findOne({ email });
+    if (userExists) {
+      throw new BadRequestException('El usuario ya está registrado');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const newUser = await this.userModel.create({
-      email: registerDto.email,
+    // Validar que las contraseñas coincidan
+    if (password !== passwordConfirmation) {
+      throw new BadRequestException('La confirmación de contraseña no coincide');
+    }
+
+    // Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear nuevo usuario
+    const user = new this.userModel({
+      email,
       password: hashedPassword,
-      role: 'seller',
+      role: 'seller', // o el valor por defecto que prefieras
     });
 
-    return this.generateToken(newUser);
+    await user.save();
+
+    return this.login(user);
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -35,26 +48,18 @@ export class AuthService {
     if (!user) return null;
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    return isPasswordValid ? user : null;
+    if (!isPasswordValid) return null;
+
+    return user;
   }
 
-  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-    const user = await this.validateUser(loginDto.email, loginDto.password);
-    if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas');
-    }
-    return this.generateToken(user);
-  }
-
-  private generateToken(user: User): { access_token: string } {
-    if(!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined');
-    }
+  async login(user: User) {
     const payload = {
       sub: user._id,
       email: user.email,
       role: user.role,
     };
+
     return {
       access_token: this.jwtService.sign(payload),
     };
