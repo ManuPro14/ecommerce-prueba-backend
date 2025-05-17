@@ -16,8 +16,8 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SELLER)
-  @ApiOperation({ summary: 'Crear producto (solo vendedores)' })
+  @Roles(UserRole.SELLER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Crear producto (solo vendedores o administradores)' })
   @ApiResponse({ status: 201, description: 'Producto creado correctamente' })
   @ApiResponse({ status: 403, description: 'No autorizado' })
   createProduct(@Body() dto: CreateProductDto, @Req() req: any) {

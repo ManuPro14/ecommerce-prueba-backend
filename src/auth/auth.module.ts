@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { PasswordConfirmationValidator } from './validators/password-confirmation.validator';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [
     AuthService,
     PasswordConfirmationValidator,
+    JwtStrategy,
   ],
   controllers: [AuthController],
   exports: [AuthService], 
