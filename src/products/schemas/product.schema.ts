@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { User } from '../../auth/schemas/user.schema';
 
 @Schema({ timestamps: true })
@@ -24,6 +24,9 @@ export class Product extends Document {
 
   @Prop({ required: true })
   image: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  seller: mongoose.Types.ObjectId;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

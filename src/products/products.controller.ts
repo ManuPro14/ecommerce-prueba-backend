@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Query, Put, Param, Delete } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -21,7 +21,7 @@ export class ProductsController {
   @ApiResponse({ status: 201, description: 'Producto creado correctamente' })
   @ApiResponse({ status: 403, description: 'No autorizado' })
   createProduct(@Body() dto: CreateProductDto, @Req() req: any) {
-    return this.productsService.create(dto, req.user);
+    return this.productsService.create(dto, req.user.sub);
   }
 
   @Get('search')
@@ -55,5 +55,34 @@ export class ProductsController {
   @ApiOperation({ summary: 'Listar productos con filtros (admin)' })
   findAllAdmin(@Query() filters: ProductFilterDto) {
     return this.productsService.findAllAdmin(filters);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Obtener producto por id' })
+  @ApiResponse({ status: 200, description: 'Producto encontrado' })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  getProductById(@Param('id') id: string) {
+    return this.productsService.findById(id);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SELLER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Actualizar producto por id' })
+  @ApiResponse({ status: 200, description: 'Producto actualizado correctamente' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  updateProduct(@Param('id') id: string, @Body() dto: CreateProductDto, @Req() req: any) {
+    return this.productsService.update(id, dto, req.user.sub);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SELLER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Eliminar producto por id' })
+  @ApiResponse({ status: 200, description: 'Producto eliminado correctamente' })
+  @ApiResponse({ status: 403, description: 'No autorizado' })
+  deleteProduct(@Param('id') id: string, @Req() req: any) {
+    return this.productsService.delete(id, req.user.sub);
   }
 }
