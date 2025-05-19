@@ -7,9 +7,9 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/enums/user-role.enum';
 import { ProductFilterDto } from './dto/product-filter.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('products')
-@ApiBearerAuth()
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -29,6 +29,14 @@ export class ProductsController {
   @ApiResponse({ status: 200, description: 'Listado de productos filtrados' })
   findFiltered(@Query() filter: ProductFilterDto) {
     return this.productsService.findFiltered(filter);
+  }
+
+  @Get('public')
+  @Public()
+  @ApiOperation({ summary: 'Listar productos públicos' })
+  @ApiResponse({ status: 200, description: 'Listado de productos públicos' })
+  getPublicProducts() {
+    return this.productsService.findAllPublic();
   }
 
   @Get()

@@ -102,4 +102,8 @@ export class ProductsService {
     await product.deleteOne();
     return product;
   }
+
+  async findAllPublic() : Promise<Product[]> {
+    return this.productModel.find({}).populate('seller', 'email -_id').exec();
+  }
 }
